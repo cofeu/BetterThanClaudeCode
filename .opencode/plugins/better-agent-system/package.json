@@ -1,0 +1,41 @@
+{
+  "name": "opencode-better-agent-system",
+  "version": "3.3.0",
+  "description": "Adapted Claude Fable 5.1 system prompt with specialized agents for OpenCode",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src",
+    "scripts",
+    "SYSTEM_PROMPT.md"
+  ],
+  "scripts": {
+    "build": "tsc --noEmit",
+    "check:tokens": "node scripts/token-budget.mjs",
+    "check:tokens:json": "node scripts/token-budget.mjs --json",
+    "setup:docs": "bash scripts/setup-docs.sh",
+    "install:global": "bash scripts/install-global.sh",
+    "test": "npm run check:tokens"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "agents",
+    "system-prompt",
+    "claude"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@opencode/plugin": "latest"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

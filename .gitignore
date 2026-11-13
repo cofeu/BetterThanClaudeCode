@@ -1,0 +1,53 @@
+# --- Dependencies ---
+node_modules/
+.pnp.*
+.yarn/*
+
+# --- Python / document toolchain ---
+.venv/
+.venv-*/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# --- Local runtime data (pentest workspace, generated files) ---
+data/
+tmp/
+.cache/
+claude-fable-5.1.md
+
+# --- Secrets and credentials ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.kdbx
+id_rsa*
+id_ed25519*
+credentials*
+secrets*
+
+
+# --- Logs and build output ---
+*.log
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
