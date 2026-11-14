@@ -1,0 +1,8 @@
+{
+  "id": "js-pagination",
+  "language": "javascript",
+  "prompt": "Read TASK.md and implement the feature. Run the visible tests. Do not modify anything under tests/.",
+  "visible": "node --test tests/*.test.js",
+  "hidden": "node --test tests_hidden/*.test.js",
+  "timeoutSec": 300
+}

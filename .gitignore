@@ -21,6 +21,10 @@ tmp/
 .cache/
 claude-fable-5.1.md
 
+# --- Benchmark artifacts (regenerate with bench/run.mjs) ---
+bench/results/
+bench/.config-baseline/
+
 # --- Secrets and credentials ---
 .env
 .env.*

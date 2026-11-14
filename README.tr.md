@@ -4,7 +4,7 @@
 
 [OpenCode](https://opencode.ai) için 25 uzman agent, 40 isteğe bağlı skill ve 9 slash command — derinlik, gerçekten kullanana kadar hiçbir maliyet çıkarmayacak şekilde tasarlandı.
 
-> **Durum ve dürüst iddialar.** Config, token koruması, kurulum scripti ve tarayıcı entegrasyonu doğrulandı (bkz. [Doğrulama](#doğrulama)). Repo adı bir hedeftir: bu proje Claude Code'a karşı **benchmark edilmedi** ve agent davranışına dair yayınlanmış bir değerlendirme yok. Token sayıları karakter/kelime sezgiseliyle üretilen **tahminlerdir**, tokenizer ölçümü değildir.
+> **Durum ve dürüst iddialar.** Config, token koruması, kurulum scripti ve tarayıcı entegrasyonu doğrulandı (bkz. [Doğrulama](#doğrulama)). Repo adı bir hedeftir: bu proje Claude Code'a karşı **benchmark edilmedi**. Küçük, aynı-model bir pilot (5 görev × 2 kol, kol başına 1 tekrar) OpenCode'un varsayılan `build` agent'ından **istatistiksel olarak anlamlı bir fark** bulmadı — iki kol da 5/5 geçti — ve [`bench/`](bench/) altında belgelendi. Token sayıları karakter/kelime sezgiseliyle üretilen **tahminlerdir**, tokenizer ölçümü değildir.
 
 [Türkçe](README.tr.md) · [English](README.md)
 
@@ -32,7 +32,7 @@ Bu proje tam tersini yapar:
 | İş akışı | Adımları sen hatırlarsın | 9 slash command standartlaştırır |
 | Güvenlik | Prompt seviyesinde uyarı | Zorunlu izinler + shell kuralları |
 
-Tasarım sabit maliyeti küçük, talimatları çakışmasız tutar. Çıktı kalitesinin daha büyük bir modelle eşleşip eşleşmediği bu repoda **benchmark edilmemiştir**.
+Tasarım sabit maliyeti küçük, talimatları çakışmasız tutar. OpenCode'un varsayılan agent'ına karşı aynı-model bir pilot [`bench/`](bench/) altında var, ancak beş küçük görevde anlamlı bir fark bulmadı — bkz. [Doğrulama](#doğrulama).
 
 ## Özellikler
 
@@ -167,15 +167,18 @@ Gerçekten doğrulananlar:
 | Kurulum scripti | JSONC yorumları, sondaki virgüller, mevcut agent/izin/`mcp` ile test edildi; idempotent; `--keep-agents` ve `--force` doğrulandı |
 | Tarayıcı entegrasyonu | `https://example.com` smoke testi: snapshot döndü, 0 console hatası, 2 network isteği |
 | Canlı global kurulum | Plugin, agent, skill ve komutlar `~/.config/opencode` altında mevcut |
+| Benchmark harness | 5 görev, 10 eşleştirilmiş koşu, `bwrap` ile sandbox; görünür + gizli testler referans düzeltmeden önce ve sonra doğrulandı |
+| Pilot sonucu | **5/5 vs 5/5** (baseline vs treatment), exact McNemar **p = 1.0000** — anlamlı fark yok; tavan etkisi. Bkz. [`bench/PILOT.md`](bench/PILOT.md) |
 
 Doğrulanmayanlar:
 
-- Claude Code veya başka bir agent sistemine karşı **benchmark yok**.
-- Çıktı kalitesi, görev başarı oranı veya gecikme üzerine **davranışsal değerlendirme yok**.
+- **Claude Code benchmark'ı yok.** API kredisi bulunmadığı için karşılaştırma kolu bloke.
+- **Bu sistemin OpenCode'un varsayılan agent'ından daha iyi olduğuna dair kanıt yok.** Pilot, kolay bir görev setinde sıfır sonuç verdi.
+- Çıktı kalitesi ve gecikme üzerine **geniş davranışsal değerlendirme yok**; pilot beş küçük görevi ve kol başına bir tekrarı kapsıyor.
 - Tarayıcı araçları tek sayfada test edildi, her site için değil; OpenCode masaüstü uygulaması gerekir.
 - Yalnızca Linux üzerinde OpenCode 2.3.0 test edildi.
 
-Bunun ötesinde kanıt istiyorsan kendi önce/sonra görevlerini çalıştırıp sonuçları yayınla.
+Bunun ötesinde kanıt istiyorsan [`bench/`](bench/) altındaki harness'ı daha zor görevlerde çalıştır ve ham sonuçları yayınla.
 
 ### Çalışma zamanı kontrolleri
 

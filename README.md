@@ -4,7 +4,7 @@
 
 25 specialist agents, 40 on-demand skills and 9 slash commands for [OpenCode](https://opencode.ai) — built so that depth costs nothing until you actually use it.
 
-> **Status and honest claims.** The configuration, token guard, installer and browser integration are verified (see [Validation](#validation)). The repository name is aspirational: this project has **not** been benchmarked against Claude Code, and no behavioral evaluation of the agents has been published. Token figures are **estimates** from a character/word heuristic, not tokenizer counts.
+> **Status and honest claims.** The configuration, token guard, installer and browser integration are verified (see [Validation](#validation)). The repository name is aspirational: this project has **not** been benchmarked against Claude Code. A small same-model pilot (5 tasks × 2 arms, 1 repetition) found **no statistically significant difference** from OpenCode's default `build` agent — both passed 5/5 — and is documented in [`bench/`](bench/). Token figures are **estimates** from a character/word heuristic, not tokenizer counts.
 
 [English](README.md) · [Türkçe](README.tr.md)
 
@@ -32,7 +32,7 @@ This project takes the opposite approach:
 | Workflow | You remember the steps | 9 slash commands encode them |
 | Safety | Prompt-level warnings | Enforced permissions + shell rules |
 
-The design keeps the fixed cost small and the instructions non-overlapping. Whether output quality matches a larger model is **not** something this repository has benchmarked.
+The design keeps the fixed cost small and the instructions non-overlapping. A same-model pilot against OpenCode's default agent is included in [`bench/`](bench/), but it found no significant difference on five small tasks — see [Validation](#validation).
 
 ## Features
 
@@ -167,15 +167,18 @@ What was actually verified:
 | Installer | Tested with JSONC comments, trailing commas, pre-existing agents, permissions and `mcp`; idempotent; `--keep-agents` and `--force` verified |
 | Browser integration | Smoke test on `https://example.com`: snapshot returned, 0 console errors, 2 network requests |
 | Live global install | Plugin, agents, skills and commands present under `~/.config/opencode` |
+| Benchmark harness | 5 tasks, 10 paired runs, sandboxed with `bwrap`; visible + hidden tests validated before and after a reference fix |
+| Pilot result | **5/5 vs 5/5** (baseline vs treatment), exact McNemar **p = 1.0000** — no significant difference; a ceiling effect. See [`bench/PILOT.md`](bench/PILOT.md) |
 
 What was **not** verified:
 
-- **No benchmark** against Claude Code or any other agent system.
-- **No behavioral evaluation** of output quality, task success rate or latency.
+- **No Claude Code benchmark.** The head-to-head arm is blocked by unavailable API credits.
+- **No evidence that this system is better than OpenCode's default agent.** The pilot was a null result on an easy task set.
+- **No broad behavioral evaluation** of output quality or latency; the pilot covers five small tasks with one repetition each.
 - Browser tools were smoke-tested on one page, not across arbitrary sites; they require the OpenCode desktop app.
 - Only OpenCode 2.3.0 on Linux was tested.
 
-If you need evidence beyond this, run your own before/after tasks and publish the results.
+If you need evidence beyond this, run the harness in [`bench/`](bench/) on harder tasks and publish the raw results.
 
 ### Runtime controls
 

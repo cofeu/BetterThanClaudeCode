@@ -1,0 +1,8 @@
+{
+  "id": "py-inventory-discount",
+  "language": "python",
+  "prompt": "Read TASK.md and fix the bug. Run the visible tests. Do not modify anything under tests/.",
+  "visible": "python3 -m unittest discover -s tests -t . -v",
+  "hidden": "python3 -m unittest discover -s tests_hidden -t . -v",
+  "timeoutSec": 300
+}
