@@ -50,7 +50,7 @@ The result is a system that behaves like a much larger, more disciplined model w
 Requirements: **OpenCode 2.3+**, **Node.js 20+**, and bash (Linux, macOS, or WSL).
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/BetterThanClaudeCode.git
+git clone https://github.com/cofeu/BetterThanClaudeCode.git
 cd BetterThanClaudeCode/.opencode/plugins/better-agent-system
 
 # Optional: PDF / DOCX / PPTX / XLSX skills
