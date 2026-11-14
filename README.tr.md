@@ -1,6 +1,6 @@
 # Better Agent System
 
-**İstek başına ~610 token'a kıdemli bir mühendislik ekibi.**
+**İstek başına ~647 token'a kıdemli bir mühendislik ekibi.**
 
 [OpenCode](https://opencode.ai) için 25 uzman agent, 39 isteğe bağlı skill ve 8 slash command — derinlik, gerçekten kullanana kadar hiçbir maliyet çıkarmayacak şekilde tasarlandı.
 
@@ -10,7 +10,7 @@
 [![Agent](https://img.shields.io/badge/agent-25-8b5cf6?style=flat-square)](#agentlar)
 [![Skill](https://img.shields.io/badge/skill-39-0ea5e9?style=flat-square)](#skilller)
 [![Komut](https://img.shields.io/badge/komut-8-10b981?style=flat-square)](#slash-commandlar)
-[![Sabit maliyet](https://img.shields.io/badge/sabit%20maliyet-~610%20token-f59e0b?style=flat-square)](#token-ekonomisi)
+[![Sabit maliyet](https://img.shields.io/badge/sabit%20maliyet-~647%20token-f59e0b?style=flat-square)](#token-ekonomisi)
 [![Lisans](https://img.shields.io/badge/lisans-MIT-64748b?style=flat-square)](#lisans)
 
 ---
@@ -23,7 +23,7 @@ Bu proje tam tersini yapar:
 
 | | Tipik mega prompt | Better Agent System |
 |---|---|---|
-| İstek başına sabit maliyet | 8.000+ token | **~610 token** |
+| İstek başına sabit maliyet | 8.000+ token | **~647 token** |
 | Yapı | Her iş için tek prompt | 25 odaklı agent |
 | Derinlik | Her zaman yüklü | 39 skill, sadece kullanılınca |
 | Model | Sık sık sabit kodlu | **Oturumun modelini izler** |
@@ -84,8 +84,8 @@ Sonra herhangi bir projeyi aç, seçiciden bir agent seç ve normal konuş.
 └───────────────────────────┬─────────────────────────────┘
                             │ her istek
               ┌─────────────▼──────────────┐
-              │ aktif agent `system`       │  ~90–160 token
-              │ + 39 skill açıklaması      │  ~448 token
+              │ aktif agent `system`       │  ~90–170 token
+              │ + 39 skill açıklaması      │  ~477 token
               └─────────────┬──────────────┘
                             │ tetikleyici eşleşmesi
               ┌─────────────▼──────────────┐
@@ -113,9 +113,9 @@ OpenCode zaten araçlar, izinler ve düzenleme için güçlü bir temel prompt t
 
 | Bileşen | Ne zaman ödenir | Ölçülen |
 |---|---|---|
-| Aktif agent prompt'u | Her istek | ort. ~145, en fazla ~162 |
-| 39 skill açıklaması | Her istek | ~448 |
-| **Sabit toplam** | **Her istek** | **~610** |
+| Aktif agent prompt'u | Her istek | ort. ~154, en fazla ~170 |
+| 39 skill açıklaması | Her istek | ~477 |
+| **Sabit toplam** | **Her istek** | **~647** |
 | Tek skill gövdesi | Sadece tetiklenince | ort. ~330, en fazla 1.400 |
 | Tüm skill gövdeleri | Asla | ~12.868 |
 
@@ -208,6 +208,12 @@ Uzun oturumlar prompt'lardan değil, araç çıktısı ve geçmişten büyür. C
 ## Skill'ler
 
 Skill'ler tetikleyici kelimelerle otomatik, ya da `use skill <id>` ile açıkça çağrılır.
+
+### Yönlendirme ve ayrıştırma
+
+Açıklamalar pazarlama metni değil, ayırt edici sinyaldir: `code-review` "not system design", `architecture-review` "not code diffs", `file-reading` "not PDF or Office" der. Böylece çakışan skill'ler birbirinin isteğini çalmaz.
+
+İstek birden fazla alana yayıldığında agent'lar uyan tüm skill'leri yükler — her agent prompt'undaki ortak kural: **"if two fit, load both"**. Belirli bir skill'i zorlamak için `use skill <id>` yaz.
 
 ### Mühendislik çekirdeği (19)
 

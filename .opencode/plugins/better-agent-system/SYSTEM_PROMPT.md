@@ -4,7 +4,7 @@ Claude Fable 5.1's system prompt reorganized into **25 specialized agents**, **3
 
 ## Core idea
 
-OpenCode already ships a strong base prompt (tools, permissions, editing). So v3 adds **no base prompt at all**. Each agent carries only a telegraphic domain brief (~90-130 tokens), and deep recipes live in skills that load **only when invoked**. Fixed cost is close to zero; depth is still available on demand.
+OpenCode already ships a strong base prompt (tools, permissions, editing). So v3 adds **no base prompt at all**. Each agent carries only a telegraphic domain brief (~120-170 tokens), and deep recipes live in skills that load **only when invoked**. Fixed cost is close to zero; depth is still available on demand.
 
 > Config field is `system`, not `instructions`. In OpenCode v2.3 an `instructions` key is accepted silently but never reaches the model, so an agent would load with an empty prompt. `scripts/token-budget.mjs` rejects unknown agent keys to catch this class of bug.
 
@@ -12,9 +12,11 @@ OpenCode already ships a strong base prompt (tools, permissions, editing). So v3
 |----------|--------------------------|
 | Single mega-prompt | ~8,000+ |
 | v2 distributed agents | ~350-550 |
-| **v3 agents + on-demand skills** | **~610** (active agent + 39 descriptions) |
+| **v3 agents + on-demand skills** | **~647** (active agent + 39 descriptions) |
 
 Skills are invoked automatically on trigger keywords, or explicitly by name. Their full content is paid for only on the turn it is used.
+
+Descriptions are written as **discriminators**: `code-review` says "not system design", `architecture-review` says "not code diffs", `file-reading` says "not PDF or Office". Every agent prompt also carries "Skills: if two fit, load both", so multi-domain requests load both instead of guessing. Force a choice with `use skill <id>`.
 
 ## Shared behavior layer
 
@@ -183,7 +185,7 @@ It also fails on missing skill references, duplicate IDs or descriptions, hardco
 
 ## Runtime token controls
 
-The 610 figure is only what this system adds. Most tokens in a long session come from tool output and history, so `opencode.jsonc` also caps them:
+The 647 figure is only what this system adds. Most tokens in a long session come from tool output and history, so `opencode.jsonc` also caps them:
 
 ```jsonc
 "tool_output": { "max_lines": 500, "max_bytes": 20480 },

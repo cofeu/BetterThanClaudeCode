@@ -1,6 +1,6 @@
 # Better Agent System
 
-**A senior engineering team in ~610 tokens per request.**
+**A senior engineering team in ~647 tokens per request.**
 
 25 specialist agents, 39 on-demand skills and 8 slash commands for [OpenCode](https://opencode.ai) — built so that depth costs nothing until you actually use it.
 
@@ -10,7 +10,7 @@
 [![Agents](https://img.shields.io/badge/agents-25-8b5cf6?style=flat-square)](#agents)
 [![Skills](https://img.shields.io/badge/skills-39-0ea5e9?style=flat-square)](#skills)
 [![Commands](https://img.shields.io/badge/commands-8-10b981?style=flat-square)](#slash-commands)
-[![Fixed cost](https://img.shields.io/badge/fixed%20cost-~610%20tokens-f59e0b?style=flat-square)](#token-economics)
+[![Fixed cost](https://img.shields.io/badge/fixed%20cost-~647%20tokens-f59e0b?style=flat-square)](#token-economics)
 [![License](https://img.shields.io/badge/license-MIT-64748b?style=flat-square)](#license)
 
 ---
@@ -23,7 +23,7 @@ This project takes the opposite approach:
 
 | | Typical mega prompt | Better Agent System |
 |---|---|---|
-| Fixed cost per request | 8,000+ tokens | **~610 tokens** |
+| Fixed cost per request | 8,000+ tokens | **~647 tokens** |
 | Structure | One prompt for all tasks | 25 focused agents |
 | Depth | Always loaded | 39 skills, loaded on demand |
 | Model | Often hardcoded | **Inherits your session model** |
@@ -84,8 +84,8 @@ Then open any project, pick an agent from the picker, and talk normally.
 └───────────────────────────┬─────────────────────────────┘
                             │ every request
               ┌─────────────▼──────────────┐
-              │ active agent `system`      │  ~90–160 tokens
-              │ + 39 skill descriptions    │  ~448 tokens
+              │ active agent `system`      │  ~90–170 tokens
+              │ + 39 skill descriptions    │  ~477 tokens
               └─────────────┬──────────────┘
                             │ trigger match
               ┌─────────────▼──────────────┐
@@ -113,9 +113,9 @@ Measured with `npm run check:tokens`:
 
 | Component | When it is paid | Measured |
 |---|---|---|
-| Active agent prompt | Every request | ~145 avg, ~162 max |
-| All 39 skill descriptions | Every request | ~448 |
-| **Fixed total** | **Every request** | **~610** |
+| Active agent prompt | Every request | ~154 avg, ~170 max |
+| All 39 skill descriptions | Every request | ~477 |
+| **Fixed total** | **Every request** | **~647** |
 | One skill body | Only when triggered | ~330 avg, ≤1,400 max |
 | All skill bodies combined | Never | ~12,868 |
 
@@ -208,6 +208,12 @@ All 25 agents use `mode: "all"` and inherit the session's active model. `default
 ## Skills
 
 Skills are invoked automatically on trigger keywords, or explicitly with `use skill <id>`.
+
+### Routing and disambiguation
+
+Descriptions are written as discriminators, not marketing copy: `code-review` says "not system design", `architecture-review` says "not code diffs", `file-reading` says "not PDF or Office". This keeps overlapping skills from stealing each other's requests.
+
+When a request spans domains, agents load every skill that fits — the shared rule in every agent prompt is **"if two fit, load both"**. To force a specific skill, say `use skill <id>`.
 
 ### Engineering core (19)
 
