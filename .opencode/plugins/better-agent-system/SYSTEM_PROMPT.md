@@ -1,6 +1,6 @@
-# Better Agent System v3.3
+# Better Agent System v3.4
 
-Claude Fable 5.1's system prompt reorganized into **25 specialized agents**, **39 on-demand skills** and **8 slash commands**.
+Claude Fable 5.1's system prompt reorganized into **25 specialized agents**, **40 on-demand skills** and **9 slash commands**.
 
 ## Core idea
 
@@ -12,7 +12,7 @@ OpenCode already ships a strong base prompt (tools, permissions, editing). So v3
 |----------|--------------------------|
 | Single mega-prompt | ~8,000+ |
 | v2 distributed agents | ~350-550 |
-| **v3 agents + on-demand skills** | **~647** (active agent + 39 descriptions) |
+| **v3 agents + on-demand skills** | **~667** (active agent + 40 descriptions) |
 
 Skills are invoked automatically on trigger keywords, or explicitly by name. Their full content is paid for only on the turn it is used.
 
@@ -100,7 +100,7 @@ Global shell rules sit in `permissions` and are evaluated last-match-wins:
 | `sudo *`, `dd *`, `mkfs*` | ask |
 | `curl`/`wget` piped to `sh` or `bash` | ask |
 
-## Commands (8)
+## Commands (9)
 
 Global slash commands live in `.opencode/commands/` and install to `~/.config/opencode/commands/`. The template body loads only when the command runs, so fixed cost is zero.
 
@@ -114,10 +114,11 @@ Global slash commands live in `.opencode/commands/` and install to `~/.config/op
 | `/incident <sym>` | sre | Stabilize, timeline, blameless postmortem |
 | `/research <topic>` | tech-lead | Dated, primary-source research with conflicts and gaps |
 | `/prd <feature>` | product-manager | Problem, stories, acceptance criteria, metrics |
+| `/browse <url>` | frontend-expert | Open a page, inspect console/network, screenshot, verify a UI change |
 
 Commands never pin a model, so they follow the session's active model.
 
-## Skills (39, auto-invoke)
+## Skills (40, auto-invoke)
 
 Every skill referenced by an agent exists in the plugin.
 
@@ -162,6 +163,7 @@ Every skill referenced by an agent exists in the plugin.
 | `git-workflow` | branch, rebase, conflict, bisect, revert |
 | `untrusted-content` | web page, fetched URL, issue text, prompt injection |
 | `language-playbooks` | idiomatic TS/Python/Go/Rust |
+| `browser-deep` | browser, UI check, console, network, DevTools, Lighthouse |
 
 ## Token budget guard
 
@@ -224,7 +226,7 @@ Re-run it after editing agents or skills. Project config still wins over global 
 ## Files
 
 - `opencode.jsonc` — agent definitions (25), modes, steps, permissions; the install source
-- `.opencode/plugins/better-agent-system/src/index.ts` — skill registration (39)
+- `.opencode/plugins/better-agent-system/src/index.ts` — skill registration (40)
 - `.opencode/commands/` — slash command sources (8)
 - `.opencode/plugins/better-agent-system/scripts/token-budget.mjs` — token guard
 - `.opencode/plugins/better-agent-system/scripts/install-global.sh` — global installer

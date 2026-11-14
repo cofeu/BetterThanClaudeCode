@@ -1,16 +1,16 @@
 # Better Agent System
 
-**A senior engineering team in ~647 tokens per request.**
+**A senior engineering team in ~667 tokens per request.**
 
-25 specialist agents, 39 on-demand skills and 8 slash commands for [OpenCode](https://opencode.ai) — built so that depth costs nothing until you actually use it.
+25 specialist agents, 40 on-demand skills and 9 slash commands for [OpenCode](https://opencode.ai) — built so that depth costs nothing until you actually use it.
 
 [English](README.md) · [Türkçe](README.tr.md)
 
-[![Version](https://img.shields.io/badge/version-3.3.0-blue?style=flat-square)](.opencode/plugins/better-agent-system/package.json)
+[![Version](https://img.shields.io/badge/version-3.4.0-blue?style=flat-square)](.opencode/plugins/better-agent-system/package.json)
 [![Agents](https://img.shields.io/badge/agents-25-8b5cf6?style=flat-square)](#agents)
-[![Skills](https://img.shields.io/badge/skills-39-0ea5e9?style=flat-square)](#skills)
+[![Skills](https://img.shields.io/badge/skills-40-0ea5e9?style=flat-square)](#skills)
 [![Commands](https://img.shields.io/badge/commands-8-10b981?style=flat-square)](#slash-commands)
-[![Fixed cost](https://img.shields.io/badge/fixed%20cost-~647%20tokens-f59e0b?style=flat-square)](#token-economics)
+[![Fixed cost](https://img.shields.io/badge/fixed%20cost-~667%20tokens-f59e0b?style=flat-square)](#token-economics)
 [![License](https://img.shields.io/badge/license-MIT-64748b?style=flat-square)](#license)
 
 ---
@@ -23,11 +23,11 @@ This project takes the opposite approach:
 
 | | Typical mega prompt | Better Agent System |
 |---|---|---|
-| Fixed cost per request | 8,000+ tokens | **~647 tokens** |
+| Fixed cost per request | 8,000+ tokens | **~667 tokens** |
 | Structure | One prompt for all tasks | 25 focused agents |
-| Depth | Always loaded | 39 skills, loaded on demand |
+| Depth | Always loaded | 40 skills, loaded on demand |
 | Model | Often hardcoded | **Inherits your session model** |
-| Workflow | You remember the steps | 8 slash commands encode them |
+| Workflow | You remember the steps | 9 slash commands encode them |
 | Safety | Prompt-level warnings | Enforced permissions + shell rules |
 
 The result is a system that behaves like a much larger, more disciplined model while staying cheap enough to leave enabled all day.
@@ -35,8 +35,9 @@ The result is a system that behaves like a much larger, more disciplined model w
 ## Features
 
 - **25 specialist agents** across build, analysis, delivery, data/AI, and leadership.
-- **39 on-demand skills** with concrete commands, checklists and failure modes.
-- **8 slash commands** for the workflows you repeat: verify, review, debug, ship, onboard, incident, research, PRD.
+- **40 on-demand skills** with concrete commands, checklists and failure modes.
+- **9 slash commands** for the workflows you repeat: verify, review, debug, ship, onboard, incident, research, PRD, browse.
+- **Browser + DevTools** — drive Chromium, inspect console and network, run traces, CPU profiles, heap diffs and Lighthouse audits.
 - **Zero hardcoded models** — every agent follows the model you selected in the session.
 - **Real delegation** — all agents run in `all` mode, so `tech-lead` can parallelize specialists as subagents.
 - **Bounded autonomy** — per-agent `steps` caps runaway loops (reviewers 8–12, builders 16–24).
@@ -74,6 +75,7 @@ Then open any project, pick an agent from the picker, and talk normally.
 /verify                  # run format, lint, typecheck, tests and build
 /review                  # severity-ordered review of your current diff
 /debug TypeError in ...  # reproduce, isolate, fix, add a regression test
+/browse localhost:3000    # open a page, check console/network, screenshot
 ```
 
 ## How it works
@@ -84,8 +86,8 @@ Then open any project, pick an agent from the picker, and talk normally.
 └───────────────────────────┬─────────────────────────────┘
                             │ every request
               ┌─────────────▼──────────────┐
-              │ active agent `system`      │  ~90–170 tokens
-              │ + 39 skill descriptions    │  ~477 tokens
+              │ active agent `system`      │  ~90–176 tokens
+              │ + 40 skill descriptions    │  ~491 tokens
               └─────────────┬──────────────┘
                             │ trigger match
               ┌─────────────▼──────────────┐
@@ -113,9 +115,9 @@ Measured with `npm run check:tokens`:
 
 | Component | When it is paid | Measured |
 |---|---|---|
-| Active agent prompt | Every request | ~154 avg, ~170 max |
-| All 39 skill descriptions | Every request | ~477 |
-| **Fixed total** | **Every request** | **~647** |
+| Active agent prompt | Every request | ~156 avg, ~176 max |
+| All 40 skill descriptions | Every request | ~491 |
+| **Fixed total** | **Every request** | **~667** |
 | One skill body | Only when triggered | ~330 avg, ≤1,400 max |
 | All skill bodies combined | Never | ~12,868 |
 
@@ -251,6 +253,10 @@ When a request spans domains, agents load every skill that fits — the shared r
 
 `frontend-design` · `deep-research` · `skill-authoring`
 
+### Browser and DevTools (1)
+
+`browser-deep`
+
 ## Slash commands
 
 Commands live in `.opencode/commands/` and install to `~/.config/opencode/commands/`. Their bodies load only when invoked, so they add **zero fixed cost**.
@@ -265,6 +271,7 @@ Commands live in `.opencode/commands/` and install to `~/.config/opencode/comman
 | `/incident <symptom>` | sre | Stabilize, timeline, blameless postmortem |
 | `/research <topic>` | tech-lead | Dated, primary-source research with conflicts and gaps |
 | `/prd <feature>` | product-manager | Problem, stories, acceptance criteria, metrics |
+| `/browse <url>` | frontend-expert | Open a page, inspect console/network, screenshot, verify a UI change |
 
 Commands never pin a model, so they follow the session's active model.
 
@@ -334,9 +341,9 @@ Nothing to change. Select the model in OpenCode once; every agent and command in
 .
 ├── opencode.jsonc                      # 25 agents, modes, steps, permissions
 ├── .opencode/
-│   ├── commands/                       # 8 slash command templates
+│   ├── commands/                       # 9 slash command templates
 │   └── plugins/better-agent-system/
-│       ├── src/index.ts                # 39 skill definitions + startup guard
+│       ├── src/index.ts                # 40 skill definitions + startup guard
 │       ├── scripts/
 │       │   ├── install-global.sh       # global installer
 │       │   ├── setup-docs.sh           # isolated Python venv

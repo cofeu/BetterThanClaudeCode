@@ -1,16 +1,16 @@
 # Better Agent System
 
-**İstek başına ~647 token'a kıdemli bir mühendislik ekibi.**
+**İstek başına ~667 token'a kıdemli bir mühendislik ekibi.**
 
-[OpenCode](https://opencode.ai) için 25 uzman agent, 39 isteğe bağlı skill ve 8 slash command — derinlik, gerçekten kullanana kadar hiçbir maliyet çıkarmayacak şekilde tasarlandı.
+[OpenCode](https://opencode.ai) için 25 uzman agent, 40 isteğe bağlı skill ve 9 slash command — derinlik, gerçekten kullanana kadar hiçbir maliyet çıkarmayacak şekilde tasarlandı.
 
 [Türkçe](README.tr.md) · [English](README.md)
 
-[![Sürüm](https://img.shields.io/badge/s%C3%BCr%C3%BCm-3.3.0-blue?style=flat-square)](.opencode/plugins/better-agent-system/package.json)
+[![Sürüm](https://img.shields.io/badge/s%C3%BCr%C3%BCm-3.4.0-blue?style=flat-square)](.opencode/plugins/better-agent-system/package.json)
 [![Agent](https://img.shields.io/badge/agent-25-8b5cf6?style=flat-square)](#agentlar)
-[![Skill](https://img.shields.io/badge/skill-39-0ea5e9?style=flat-square)](#skilller)
+[![Skill](https://img.shields.io/badge/skill-40-0ea5e9?style=flat-square)](#skilller)
 [![Komut](https://img.shields.io/badge/komut-8-10b981?style=flat-square)](#slash-commandlar)
-[![Sabit maliyet](https://img.shields.io/badge/sabit%20maliyet-~647%20token-f59e0b?style=flat-square)](#token-ekonomisi)
+[![Sabit maliyet](https://img.shields.io/badge/sabit%20maliyet-~667%20token-f59e0b?style=flat-square)](#token-ekonomisi)
 [![Lisans](https://img.shields.io/badge/lisans-MIT-64748b?style=flat-square)](#lisans)
 
 ---
@@ -23,11 +23,11 @@ Bu proje tam tersini yapar:
 
 | | Tipik mega prompt | Better Agent System |
 |---|---|---|
-| İstek başına sabit maliyet | 8.000+ token | **~647 token** |
+| İstek başına sabit maliyet | 8.000+ token | **~667 token** |
 | Yapı | Her iş için tek prompt | 25 odaklı agent |
-| Derinlik | Her zaman yüklü | 39 skill, sadece kullanılınca |
+| Derinlik | Her zaman yüklü | 40 skill, sadece kullanılınca |
 | Model | Sık sık sabit kodlu | **Oturumun modelini izler** |
-| İş akışı | Adımları sen hatırlarsın | 8 slash command standartlaştırır |
+| İş akışı | Adımları sen hatırlarsın | 9 slash command standartlaştırır |
 | Güvenlik | Prompt seviyesinde uyarı | Zorunlu izinler + shell kuralları |
 
 Sonuç: çok daha büyük ve disiplinli bir model gibi davranan, ama bütün gün açık kalacak kadar ucuz bir sistem.
@@ -35,8 +35,9 @@ Sonuç: çok daha büyük ve disiplinli bir model gibi davranan, ama bütün gü
 ## Özellikler
 
 - **25 uzman agent** — geliştirme, analiz, teslimat, veri/AI ve liderlik.
-- **39 isteğe bağlı skill** — somut komutlar, kontrol listeleri ve hata senaryoları.
-- **8 slash command** — sürekli tekrarlanan iş akışları: verify, review, debug, ship, onboard, incident, research, PRD.
+- **40 isteğe bağlı skill** — somut komutlar, kontrol listeleri ve hata senaryoları.
+- **9 slash command** — sürekli tekrarlanan iş akışları: verify, review, debug, ship, onboard, incident, research, PRD, browse.
+- **Tarayıcı + DevTools** — Chromium'u sür, console ve network incele, trace, CPU profili, heap karşılaştırması ve Lighthouse denetimi çalıştır.
 - **Sıfır sabit model** — her agent oturumda seçtiğin modeli kullanır.
 - **Gerçek delegasyon** — tüm agent'lar `all` modunda; `tech-lead` uzmanları subagent olarak paralel çalıştırabilir.
 - **Sınırlı özerklik** — agent başına `steps` limiti kaçak döngüleri keser (reviewer 8–12, builder 16–24).
@@ -74,6 +75,7 @@ Sonra herhangi bir projeyi aç, seçiciden bir agent seç ve normal konuş.
 /verify                  # format, lint, typecheck, test ve build çalıştır
 /review                  # mevcut diff için önem sıralı inceleme
 /debug TypeError in ...  # tekrar üret, izole et, düzelt, regresyon testi ekle
+/browse localhost:3000    # sayfayı aç, console/network kontrol et, ekran görüntüsü al
 ```
 
 ## Nasıl çalışır
@@ -84,8 +86,8 @@ Sonra herhangi bir projeyi aç, seçiciden bir agent seç ve normal konuş.
 └───────────────────────────┬─────────────────────────────┘
                             │ her istek
               ┌─────────────▼──────────────┐
-              │ aktif agent `system`       │  ~90–170 token
-              │ + 39 skill açıklaması      │  ~477 token
+              │ aktif agent `system`       │  ~90–176 token
+              │ + 40 skill açıklaması      │  ~491 token
               └─────────────┬──────────────┘
                             │ tetikleyici eşleşmesi
               ┌─────────────▼──────────────┐
@@ -113,9 +115,9 @@ OpenCode zaten araçlar, izinler ve düzenleme için güçlü bir temel prompt t
 
 | Bileşen | Ne zaman ödenir | Ölçülen |
 |---|---|---|
-| Aktif agent prompt'u | Her istek | ort. ~154, en fazla ~170 |
-| 39 skill açıklaması | Her istek | ~477 |
-| **Sabit toplam** | **Her istek** | **~647** |
+| Aktif agent prompt'u | Her istek | ort. ~156, en fazla ~176 |
+| 40 skill açıklaması | Her istek | ~491 |
+| **Sabit toplam** | **Her istek** | **~667** |
 | Tek skill gövdesi | Sadece tetiklenince | ort. ~330, en fazla 1.400 |
 | Tüm skill gövdeleri | Asla | ~12.868 |
 
@@ -251,6 +253,10 @@ Açıklamalar pazarlama metni değil, ayırt edici sinyaldir: `code-review` "not
 
 `frontend-design` · `deep-research` · `skill-authoring`
 
+### Tarayıcı ve DevTools (1)
+
+`browser-deep`
+
 ## Slash command'lar
 
 Komutlar `.opencode/commands/` içinde yaşar ve `~/.config/opencode/commands/` altına kurulur. Gövdeleri yalnızca çağrılınca yüklenir, yani **sabit maliyet sıfırdır**.
@@ -265,6 +271,7 @@ Komutlar `.opencode/commands/` içinde yaşar ve `~/.config/opencode/commands/` 
 | `/incident <belirti>` | sre | Durumu stabilize et, zaman çizelgesi, suçlamasız postmortem |
 | `/research <konu>` | tech-lead | Tarihli, birincil kaynaklı araştırma; çelişkiler ve boşluklar |
 | `/prd <özellik>` | product-manager | Problem, hikâyeler, kabul kriterleri, metrikler |
+| `/browse <url>` | frontend-expert | Sayfayı aç, console/network incele, ekran görüntüsü al, UI değişikliğini doğrula |
 
 Komutlar model sabitlemez; oturumun aktif modelini izler.
 
@@ -334,9 +341,9 @@ Değiştirilecek bir şey yok. OpenCode'da modeli bir kez seç; tüm agent ve ko
 .
 ├── opencode.jsonc                      # 25 agent, modlar, adımlar, izinler
 ├── .opencode/
-│   ├── commands/                       # 8 slash command şablonu
+│   ├── commands/                       # 9 slash command şablonu
 │   └── plugins/better-agent-system/
-│       ├── src/index.ts                # 39 skill tanımı + başlangıç kontrolü
+│       ├── src/index.ts                # 40 skill tanımı + başlangıç kontrolü
 │       ├── scripts/
 │       │   ├── install-global.sh       # global kurulum
 │       │   ├── setup-docs.sh           # izole Python venv

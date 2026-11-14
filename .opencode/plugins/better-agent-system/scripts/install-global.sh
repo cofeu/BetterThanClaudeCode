@@ -61,5 +61,5 @@ console.log(`Merged ${n} agents into ${globalPath}`)
 NODE
 
 echo "Plugin: $DEST_PLUGIN"
-echo "Skills: 39 | Agents: 25 | Commands: $COMMAND_COUNT"
+echo "Skills: 40 | Agents: 25 | Commands: $COMMAND_COUNT"
 echo "Reload with: opencode reload"

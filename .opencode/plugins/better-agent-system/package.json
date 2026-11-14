@@ -1,6 +1,6 @@
 {
   "name": "opencode-better-agent-system",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Adapted Claude Fable 5.1 system prompt with specialized agents for OpenCode",
   "type": "module",
   "main": "./src/index.ts",
