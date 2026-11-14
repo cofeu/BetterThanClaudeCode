@@ -4,12 +4,14 @@
 
 [OpenCode](https://opencode.ai) için 25 uzman agent, 40 isteğe bağlı skill ve 9 slash command — derinlik, gerçekten kullanana kadar hiçbir maliyet çıkarmayacak şekilde tasarlandı.
 
+> **Durum ve dürüst iddialar.** Config, token koruması, kurulum scripti ve tarayıcı entegrasyonu doğrulandı (bkz. [Doğrulama](#doğrulama)). Repo adı bir hedeftir: bu proje Claude Code'a karşı **benchmark edilmedi** ve agent davranışına dair yayınlanmış bir değerlendirme yok. Token sayıları karakter/kelime sezgiseliyle üretilen **tahminlerdir**, tokenizer ölçümü değildir.
+
 [Türkçe](README.tr.md) · [English](README.md)
 
 [![Sürüm](https://img.shields.io/badge/s%C3%BCr%C3%BCm-3.4.0-blue?style=flat-square)](.opencode/plugins/better-agent-system/package.json)
 [![Agent](https://img.shields.io/badge/agent-25-8b5cf6?style=flat-square)](#agentlar)
 [![Skill](https://img.shields.io/badge/skill-40-0ea5e9?style=flat-square)](#skilller)
-[![Komut](https://img.shields.io/badge/komut-8-10b981?style=flat-square)](#slash-commandlar)
+[![Komut](https://img.shields.io/badge/komut-9-10b981?style=flat-square)](#slash-commandlar)
 [![Sabit maliyet](https://img.shields.io/badge/sabit%20maliyet-~667%20token-f59e0b?style=flat-square)](#token-ekonomisi)
 [![Lisans](https://img.shields.io/badge/lisans-MIT-64748b?style=flat-square)](#lisans)
 
@@ -23,14 +25,14 @@ Bu proje tam tersini yapar:
 
 | | Tipik mega prompt | Better Agent System |
 |---|---|---|
-| İstek başına sabit maliyet | 8.000+ token | **~667 token** |
+| İstek başına sabit maliyet | 8.000+ token (tahmin) | **~667 token (tahmin)** |
 | Yapı | Her iş için tek prompt | 25 odaklı agent |
 | Derinlik | Her zaman yüklü | 40 skill, sadece kullanılınca |
 | Model | Sık sık sabit kodlu | **Oturumun modelini izler** |
 | İş akışı | Adımları sen hatırlarsın | 9 slash command standartlaştırır |
 | Güvenlik | Prompt seviyesinde uyarı | Zorunlu izinler + shell kuralları |
 
-Sonuç: çok daha büyük ve disiplinli bir model gibi davranan, ama bütün gün açık kalacak kadar ucuz bir sistem.
+Tasarım sabit maliyeti küçük, talimatları çakışmasız tutar. Çıktı kalitesinin daha büyük bir modelle eşleşip eşleşmediği bu repoda **benchmark edilmemiştir**.
 
 ## Özellikler
 
@@ -42,7 +44,7 @@ Sonuç: çok daha büyük ve disiplinli bir model gibi davranan, ama bütün gü
 - **Gerçek delegasyon** — tüm agent'lar `all` modunda; `tech-lead` uzmanları subagent olarak paralel çalıştırabilir.
 - **Sınırlı özerklik** — agent başına `steps` limiti kaçak döngüleri keser (reviewer 8–12, builder 16–24).
 - **Zorunlu güvenlik** — reviewer'lar kod değiştiremez, test agent'ları yalnızca test dosyalarına yazabilir, yıkıcı shell komutları onay ister.
-- **CI ve başlangıçta token koruması** — bütçe aşılırsa script hata verir.
+- **`npm test` ve başlangıçta token koruması** — bütçe aşılırsa script hata verir.
 - **Global kurulum** — tek komutla sistem her projede kullanılabilir.
 - **Doküman araç zinciri** — PDF, Word, PowerPoint ve Excel için izole Python venv.
 
@@ -65,6 +67,20 @@ opencode reload
 ```
 
 Sonra herhangi bir projeyi aç, seçiciden bir agent seç ve normal konuş.
+
+Kurulum **eklemelidir**, yıkıcı değildir:
+
+- Mevcut `~/.config/opencode/opencode.json` veya `opencode.jsonc` dosyasını kullanır, yorumları ve sondaki virgülleri kabul eder, değişiklikten önce zaman damgalı `.bak-*` kopyası alır. Yeniden yazılan dosya düz JSON'dur; yorumlar korunmaz, orijinal yedekte durur.
+- Farklı ID'li agent'lar ve ilgisiz anahtarlar (`mcp`, `provider`, …) korunur.
+- İzin kuralları yalnızca aynı `action` + `resource` çifti yoksa eklenir; senin kuralların her zaman kazanır.
+- Bu sistemin agent'ları ID ile güncellenir. Kendi sürümlerini korumak için `--keep-agents` kullan.
+- Mevcut `default_agent` korunur; değiştirmek için `--force` gerekir.
+- `tool_output` ve `compaction` anahtar bazında birleştirilir; bu projenin değerleri kazanır, ilgisiz anahtarlar korunur.
+
+```bash
+npm run install:global -- --keep-agents   # aynı ID'li agent'ları ezme
+npm run install:global -- --force         # default_agent'ı da değiştir
+```
 
 > **Sadece bu projede kullanım:** Bu repoyu OpenCode'da açmak `opencode.jsonc` ve plugin'i zaten yükler. `install:global` yalnızca sistemi her yerde kullanmak için gerekir.
 
@@ -111,15 +127,17 @@ OpenCode zaten araçlar, izinler ve düzenleme için güçlü bir temel prompt t
 
 ## Token ekonomisi
 
-`npm run check:tokens` ile ölçüldü:
+`npm run check:tokens` ile tahmin edildi:
 
-| Bileşen | Ne zaman ödenir | Ölçülen |
+| Bileşen | Ne zaman ödenir | Tahmin |
 |---|---|---|
 | Aktif agent prompt'u | Her istek | ort. ~156, en fazla ~176 |
 | 40 skill açıklaması | Her istek | ~491 |
 | **Sabit toplam** | **Her istek** | **~667** |
-| Tek skill gövdesi | Sadece tetiklenince | ort. ~330, en fazla 1.400 |
-| Tüm skill gövdeleri | Asla | ~12.868 |
+| Tek skill gövdesi | Sadece tetiklenince | ort. ~340, en fazla 1.400 |
+| Tüm skill gövdeleri | Asla | ~13.592 |
+
+> **Bunlar tahmindir, tokenizer ölçümü değildir.** Koruma her metin için `max(ceil(karakter / 4), ceil(kelime × 1.3))` kullanır. Gerçek tokenizer'lar modele ve dile göre farklı sonuç verir; sayıları kesin faturalama değil, tutarlı göreli bütçe olarak oku. Limitler de aynı sezgiselle uygulandığı için koruma kendi içinde tutarlıdır.
 
 `scripts/token-budget.mjs` tarafından zorunlu tutulan bütçeler:
 
@@ -137,6 +155,27 @@ npm run check:tokens:json   # makine tarafından okunabilir rapor
 ```
 
 Koruma ayrıca eksik skill referanslarında, tekrarlanan ID veya açıklamalarda, sabit kodlu agent modellerinde, desteklenmeyen agent anahtarlarında ve system prompt'u olmayan agent'larda hata verir. Plugin aynı kontrolü başlangıçta da tekrarlar.
+
+## Doğrulama
+
+Gerçekten doğrulananlar:
+
+| Kontrol | Sonuç |
+|---|---|
+| OpenCode 2.3.0'da config yüklemesi | 25 agent, 40 skill, 9 komut kayıtlı |
+| Token koruması | Tüm bütçelerde PASS (tahminler, yukarıya bak) |
+| Kurulum scripti | JSONC yorumları, sondaki virgüller, mevcut agent/izin/`mcp` ile test edildi; idempotent; `--keep-agents` ve `--force` doğrulandı |
+| Tarayıcı entegrasyonu | `https://example.com` smoke testi: snapshot döndü, 0 console hatası, 2 network isteği |
+| Canlı global kurulum | Plugin, agent, skill ve komutlar `~/.config/opencode` altında mevcut |
+
+Doğrulanmayanlar:
+
+- Claude Code veya başka bir agent sistemine karşı **benchmark yok**.
+- Çıktı kalitesi, görev başarı oranı veya gecikme üzerine **davranışsal değerlendirme yok**.
+- Tarayıcı araçları tek sayfada test edildi, her site için değil; OpenCode masaüstü uygulaması gerekir.
+- Yalnızca Linux üzerinde OpenCode 2.3.0 test edildi.
+
+Bunun ötesinde kanıt istiyorsan kendi önce/sonra görevlerini çalıştırıp sonuçları yayınla.
 
 ### Çalışma zamanı kontrolleri
 
@@ -349,7 +388,9 @@ Değiştirilecek bir şey yok. OpenCode'da modeli bir kez seç; tüm agent ve ko
 │       │   ├── setup-docs.sh           # izole Python venv
 │       │   └── token-budget.mjs        # bütçe + doğrulama koruması
 │       ├── SYSTEM_PROMPT.md            # mimari ve token notları
+│       ├── tsconfig.json
 │       └── package.json
+├── LICENSE
 ├── README.md
 └── README.tr.md
 ```
@@ -369,7 +410,7 @@ Değiştirilecek bir şey yok. OpenCode'da modeli bir kez seç; tüm agent ve ko
 
 - **`system`, `instructions` değil.** OpenCode v2.3'te `instructions` anahtarı sessizce kabul edilir ama modele asla ulaşmaz. Token koruması bilinmeyen agent anahtarlarını reddederek bu hata sınıfını yakalar.
 - **Proje config'i global config'i yener.** Bir proje herhangi bir agent'ı, izni veya limiti geçersiz kılabilir.
-- **Global kurulum değiştirmez, birleştirir.** `mcp` ve `provider` gibi mevcut anahtarlar korunur.
+- **Global kurulum ekler, değiştirmez.** Script JSON/JSONC okur, zaman damgalı yedek alır, ilgisiz anahtar ve agent'ları korur, yalnızca eksik izin kurallarını ekler ve `--force` verilmedikçe `default_agent` seçimini korur. Aynı ID'li agent'lar `--keep-agents` kullanılmadıkça güncellenir.
 - **Doküman venv'i symlink ile paylaşılır.** Asla kopyalanmaz ve commit edilmez (263 MB).
 - **Bütçeler temenni değil, zorunluluktur.** `npm test` token kontrolünü çalıştırır.
 
@@ -381,10 +422,12 @@ Değiştirilecek bir şey yok. OpenCode'da modeli bir kez seç; tüm agent ve ko
 4. Bir skill'deki her komut ve yol gerçek ve test edilmiş olmalı.
 5. Mimari veya bütçe değiştiğinde `SYSTEM_PROMPT.md` dosyasını güncelle.
 
-## Teşekkür
+## Kaynak ve teşekkür
 
 Claude Fable 5.1 system prompt'undan uyarlanıp OpenCode'un agent, skill ve command modeline göre yeniden düzenlenmiştir. Anthropic veya OpenCode ile bağlantılı değildir.
 
+Kaynak prompt bu repoda **bulunmaz** ve lisansı **bilinmemektedir**. Burada yalnızca uyarlama — agent prompt'ları, skill'ler, komutlar, scriptler ve dokümantasyon — dağıtılır. Kaynak materyalin sahibiysen ve yanlış kullanıldığını düşünüyorsan issue aç; içerik kaldırılır veya yeniden lisanslanır.
+
 ## Lisans
 
-MIT — `.opencode/plugins/better-agent-system/package.json` içinde belirtildiği gibi.
+Bu uyarlama ve tüm özgün kod/dokümantasyon MIT lisanslıdır. Bkz. [LICENSE](LICENSE).

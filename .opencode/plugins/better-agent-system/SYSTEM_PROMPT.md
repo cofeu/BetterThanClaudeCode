@@ -4,13 +4,17 @@ Claude Fable 5.1's system prompt reorganized into **25 specialized agents**, **4
 
 ## Core idea
 
-OpenCode already ships a strong base prompt (tools, permissions, editing). So v3 adds **no base prompt at all**. Each agent carries only a telegraphic domain brief (~120-170 tokens), and deep recipes live in skills that load **only when invoked**. Fixed cost is close to zero; depth is still available on demand.
+OpenCode already ships a strong base prompt (tools, permissions, editing). So v3 adds **no base prompt at all**. Each agent carries only a telegraphic domain brief (~156 tokens average, ~176 max), and deep recipes live in skills that load **only when invoked**. Fixed cost is close to zero; depth is still available on demand.
+
+> Token figures are **estimates** from `max(ceil(chars / 4), ceil(words × 1.3))`, not tokenizer counts. They are useful as a stable relative budget; actual billing differs by model and language. The guard applies the same estimator, so it is internally consistent.
+
+> The source prompt is not included in this repository and its license is unknown. Only this adaptation is distributed, under MIT.
 
 > Config field is `system`, not `instructions`. In OpenCode v2.3 an `instructions` key is accepted silently but never reaches the model, so an agent would load with an empty prompt. `scripts/token-budget.mjs` rejects unknown agent keys to catch this class of bug.
 
 | Approach | Fixed tokens per request |
 |----------|--------------------------|
-| Single mega-prompt | ~8,000+ |
+| Single mega-prompt | ~8,000+ (estimate) |
 | v2 distributed agents | ~350-550 |
 | **v3 agents + on-demand skills** | **~667** (active agent + 40 descriptions) |
 
@@ -167,7 +171,7 @@ Every skill referenced by an agent exists in the plugin.
 
 ## Token budget guard
 
-`scripts/token-budget.mjs` parses both `opencode.jsonc` and `src/index.ts`, then enforces:
+`scripts/token-budget.mjs` parses both `opencode.jsonc` and `src/index.ts`, then enforces these **estimated** budgets:
 
 | Budget | Limit |
 |--------|-------|
@@ -185,9 +189,15 @@ npm run check:tokens:json   # machine-readable report
 
 It also fails on missing skill references, duplicate IDs or descriptions, hardcoded agent models, unsupported agent keys (e.g. `instructions` instead of `system`), and agents without a system prompt. The plugin repeats the same check at startup and warns in the log.
 
+## Validation status
+
+Verified: config loads in OpenCode 2.3.0 with 25 agents, 40 skills and 9 commands; token guard passes; installer tested with JSONC comments, trailing commas, pre-existing agents/permissions/`mcp`, idempotency, `--keep-agents` and `--force`; browser smoke test on `https://example.com` returned a snapshot with 0 console errors and 2 requests.
+
+Not verified: no benchmark against Claude Code or any other system, no behavioral evaluation of output quality or task success, browser tested on one page only, Linux + OpenCode 2.3.0 only.
+
 ## Runtime token controls
 
-The 647 figure is only what this system adds. Most tokens in a long session come from tool output and history, so `opencode.jsonc` also caps them:
+The 667 figure is only what this system adds. Most tokens in a long session come from tool output and history, so `opencode.jsonc` also caps them:
 
 ```jsonc
 "tool_output": { "max_lines": 500, "max_bytes": 20480 },
@@ -217,17 +227,29 @@ opencode reload
 The script:
 
 1. copies the plugin to `~/.config/opencode/plugins/better-agent-system`
-2. merges `agents` (25), `default_agent`, `tool_output`, `compaction` and `permissions` into `~/.config/opencode/opencode.json`, preserving other keys such as `mcp`
-3. copies slash commands to `~/.config/opencode/commands`
-4. links the document venv so the pdf/docx/pptx/xlsx skills work in every project
+2. reads the existing `~/.config/opencode/opencode.json` **or** `opencode.jsonc` (comments and trailing commas are supported; the rewritten file is plain JSON, so comments are dropped but the backup keeps them)
+3. writes a timestamped `.bak-*` backup before touching the config
+4. adds agents whose IDs are new and updates this system's agents by ID; unrelated agents and keys such as `mcp` are preserved
+5. appends only permission rules whose `action` + `resource` pair is not already present, so existing user rules win
+6. merges `tool_output` and `compaction` key-by-key (project values win, unrelated keys survive)
+7. sets `default_agent` only when missing; an existing choice is kept
+8. copies slash commands to `~/.config/opencode/commands`
+9. links the document venv so the pdf/docx/pptx/xlsx skills work in every project
 
-Re-run it after editing agents or skills. Project config still wins over global config for values it sets, so a project can override any agent.
+Options:
+
+```bash
+npm run install:global -- --keep-agents   # keep local agents with the same ID
+npm run install:global -- --force         # replace default_agent too
+```
+
+The write is atomic (temp file + rename). Re-run after editing agents or skills. Project config still wins over global config for values it sets, so a project can override any agent.
 
 ## Files
 
 - `opencode.jsonc` — agent definitions (25), modes, steps, permissions; the install source
 - `.opencode/plugins/better-agent-system/src/index.ts` — skill registration (40)
-- `.opencode/commands/` — slash command sources (8)
+- `.opencode/commands/` — slash command sources (9)
 - `.opencode/plugins/better-agent-system/scripts/token-budget.mjs` — token guard
 - `.opencode/plugins/better-agent-system/scripts/install-global.sh` — global installer
 - `.opencode/plugins/better-agent-system/scripts/setup-docs.sh` — installs `.venv-docs` (pypdf, pdfplumber, reportlab, python-docx, python-pptx, openpyxl, pandas)

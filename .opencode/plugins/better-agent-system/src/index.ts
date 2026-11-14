@@ -1130,7 +1130,11 @@ Verify: re-snapshot or re-run the flow, capture console/network evidence, screen
 
 const VERSION = "3.4.0"
 
-export default Plugin.define({
+const plugin: Plugin.Plugin & {
+  name: string
+  version: string
+  description: string
+} = {
   id: "better-agent-system",
   name: "Better Agent System",
   version: VERSION,
@@ -1215,4 +1219,6 @@ export default Plugin.define({
 
     return () => console.log("[Better Agent System] unloaded")
   },
-})
+}
+
+export default Plugin.define(plugin)

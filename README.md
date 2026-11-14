@@ -4,12 +4,14 @@
 
 25 specialist agents, 40 on-demand skills and 9 slash commands for [OpenCode](https://opencode.ai) — built so that depth costs nothing until you actually use it.
 
+> **Status and honest claims.** The configuration, token guard, installer and browser integration are verified (see [Validation](#validation)). The repository name is aspirational: this project has **not** been benchmarked against Claude Code, and no behavioral evaluation of the agents has been published. Token figures are **estimates** from a character/word heuristic, not tokenizer counts.
+
 [English](README.md) · [Türkçe](README.tr.md)
 
 [![Version](https://img.shields.io/badge/version-3.4.0-blue?style=flat-square)](.opencode/plugins/better-agent-system/package.json)
 [![Agents](https://img.shields.io/badge/agents-25-8b5cf6?style=flat-square)](#agents)
 [![Skills](https://img.shields.io/badge/skills-40-0ea5e9?style=flat-square)](#skills)
-[![Commands](https://img.shields.io/badge/commands-8-10b981?style=flat-square)](#slash-commands)
+[![Commands](https://img.shields.io/badge/commands-9-10b981?style=flat-square)](#slash-commands)
 [![Fixed cost](https://img.shields.io/badge/fixed%20cost-~667%20tokens-f59e0b?style=flat-square)](#token-economics)
 [![License](https://img.shields.io/badge/license-MIT-64748b?style=flat-square)](#license)
 
@@ -23,14 +25,14 @@ This project takes the opposite approach:
 
 | | Typical mega prompt | Better Agent System |
 |---|---|---|
-| Fixed cost per request | 8,000+ tokens | **~667 tokens** |
+| Fixed cost per request | 8,000+ tokens (estimate) | **~667 tokens (estimate)** |
 | Structure | One prompt for all tasks | 25 focused agents |
 | Depth | Always loaded | 40 skills, loaded on demand |
 | Model | Often hardcoded | **Inherits your session model** |
 | Workflow | You remember the steps | 9 slash commands encode them |
 | Safety | Prompt-level warnings | Enforced permissions + shell rules |
 
-The result is a system that behaves like a much larger, more disciplined model while staying cheap enough to leave enabled all day.
+The design keeps the fixed cost small and the instructions non-overlapping. Whether output quality matches a larger model is **not** something this repository has benchmarked.
 
 ## Features
 
@@ -42,7 +44,7 @@ The result is a system that behaves like a much larger, more disciplined model w
 - **Real delegation** — all agents run in `all` mode, so `tech-lead` can parallelize specialists as subagents.
 - **Bounded autonomy** — per-agent `steps` caps runaway loops (reviewers 8–12, builders 16–24).
 - **Enforced safety** — reviewers cannot edit, test agents can only touch test paths, destructive shell commands require confirmation.
-- **Token guard in CI and at startup** — a script fails the build when budgets are exceeded.
+- **Token guard in `npm test` and at startup** — a script fails when budgets are exceeded.
 - **Global install** — one command makes the whole system available in every project.
 - **Document toolchain** — isolated Python venv for PDF, Word, PowerPoint and Excel work.
 
@@ -65,6 +67,20 @@ opencode reload
 ```
 
 Then open any project, pick an agent from the picker, and talk normally.
+
+The installer is **additive**, not destructive:
+
+- It uses the existing `~/.config/opencode/opencode.json` or `opencode.jsonc`, accepts comments and trailing commas, and writes a timestamped `.bak-*` copy before changing anything. The rewritten file is plain JSON, so comments are dropped — the backup keeps the original.
+- Existing agents with other IDs and unrelated keys (`mcp`, `provider`, …) are preserved.
+- Permission rules are appended only when an identical `action` + `resource` pair is not already present, so your rules always win.
+- Agents shipped by this system are updated by ID. Pass `--keep-agents` to keep your local versions instead.
+- An existing `default_agent` is kept unless you pass `--force`.
+- `tool_output` and `compaction` are merged key-by-key; values from this project win, unrelated keys survive.
+
+```bash
+npm run install:global -- --keep-agents   # do not overwrite same-ID agents
+npm run install:global -- --force         # replace default_agent as well
+```
 
 > **Project-local use:** opening this repository in OpenCode already loads `opencode.jsonc` and the plugin. `install:global` is only needed to use the system everywhere.
 
@@ -111,15 +127,17 @@ OpenCode already ships a strong base prompt for tools, permissions and editing. 
 
 ## Token economics
 
-Measured with `npm run check:tokens`:
+Estimated with `npm run check:tokens`:
 
-| Component | When it is paid | Measured |
+| Component | When it is paid | Estimate |
 |---|---|---|
 | Active agent prompt | Every request | ~156 avg, ~176 max |
 | All 40 skill descriptions | Every request | ~491 |
 | **Fixed total** | **Every request** | **~667** |
-| One skill body | Only when triggered | ~330 avg, ≤1,400 max |
-| All skill bodies combined | Never | ~12,868 |
+| One skill body | Only when triggered | ~340 avg, ≤1,400 max |
+| All skill bodies combined | Never | ~13,592 |
+
+> **These are estimates, not tokenizer measurements.** The guard uses `max(ceil(chars / 4), ceil(words × 1.3))` per string. Real tokenizers differ by model and language, so treat the numbers as a stable relative budget rather than an exact billing figure. The limits are enforced with the same estimator, so the guard is internally consistent.
 
 Hard budgets enforced by `scripts/token-budget.mjs`:
 
@@ -137,6 +155,27 @@ npm run check:tokens:json   # machine-readable report
 ```
 
 The guard also fails on missing skill references, duplicate IDs or descriptions, hardcoded agent models, unsupported agent keys, and agents without a system prompt. The plugin repeats the check at startup.
+
+## Validation
+
+What was actually verified:
+
+| Check | Result |
+|---|---|
+| Config loads in OpenCode 2.3.0 | 25 agents, 40 skills, 9 commands registered |
+| Token guard | PASS on all budgets (estimates, see above) |
+| Installer | Tested with JSONC comments, trailing commas, pre-existing agents, permissions and `mcp`; idempotent; `--keep-agents` and `--force` verified |
+| Browser integration | Smoke test on `https://example.com`: snapshot returned, 0 console errors, 2 network requests |
+| Live global install | Plugin, agents, skills and commands present under `~/.config/opencode` |
+
+What was **not** verified:
+
+- **No benchmark** against Claude Code or any other agent system.
+- **No behavioral evaluation** of output quality, task success rate or latency.
+- Browser tools were smoke-tested on one page, not across arbitrary sites; they require the OpenCode desktop app.
+- Only OpenCode 2.3.0 on Linux was tested.
+
+If you need evidence beyond this, run your own before/after tasks and publish the results.
 
 ### Runtime controls
 
@@ -349,7 +388,9 @@ Nothing to change. Select the model in OpenCode once; every agent and command in
 │       │   ├── setup-docs.sh           # isolated Python venv
 │       │   └── token-budget.mjs        # budget + validation guard
 │       ├── SYSTEM_PROMPT.md            # architecture and token notes
+│       ├── tsconfig.json
 │       └── package.json
+├── LICENSE
 ├── README.md
 └── README.tr.md
 ```
@@ -369,7 +410,7 @@ Nothing to change. Select the model in OpenCode once; every agent and command in
 
 - **`system`, not `instructions`.** In OpenCode v2.3 an `instructions` key is accepted silently but never reaches the model. The token guard rejects unknown agent keys to catch this class of bug.
 - **Project config wins over global config.** A project can override any agent, permission or limit.
-- **Global install is a merge, not a replace.** Existing keys such as `mcp` and `provider` are preserved.
+- **Global install is additive, not a replace.** The installer reads JSON/JSONC, writes a timestamped backup, preserves unrelated keys and agents, appends only missing permission rules, and keeps your `default_agent` unless `--force` is passed. Same-ID agents are updated unless `--keep-agents` is used.
 - **The document venv is shared by symlink.** It is never copied and never committed (263 MB).
 - **Budgets are enforced, not aspirational.** `npm test` runs the token check.
 
@@ -381,10 +422,12 @@ Nothing to change. Select the model in OpenCode once; every agent and command in
 4. Every command and path in a skill must be real and tested.
 5. Update `SYSTEM_PROMPT.md` when architecture or budgets change.
 
-## Credits
+## Credits and provenance
 
 Adapted from the Claude Fable 5.1 system prompt and reorganized for OpenCode's agent, skill and command model. Not affiliated with Anthropic or OpenCode.
 
+The source prompt is **not included** in this repository, and its license is **not known**. Only the adaptation — agent prompts, skills, commands, scripts and documentation — is distributed here. If you own the source material and believe it is used incorrectly, open an issue and it will be removed or relicensed.
+
 ## License
 
-MIT — as declared in `.opencode/plugins/better-agent-system/package.json`.
+MIT for this adaptation and all original code and documentation. See [LICENSE](LICENSE).

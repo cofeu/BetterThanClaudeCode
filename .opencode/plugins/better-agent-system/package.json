@@ -29,10 +29,8 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@opencode/plugin": "latest"
-  },
   "devDependencies": {
+    "@opencode/plugin": "2.3.0",
     "typescript": "^5.0.0"
   },
   "engines": {
